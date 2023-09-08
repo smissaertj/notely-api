@@ -5,15 +5,13 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon src/index.js",
+    "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "final": "nodemon final/index.js",
-    "seed": "node final/util/seed/index.js",
     "lint": "eslint \"src/**/*.js\""
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:javascripteverywhere/api.git"
+    "url": "git@github.com:smissaertj/notely-api"
   },
   "nodemonConfig": {
     "ignore": [
