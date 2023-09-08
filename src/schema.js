@@ -12,7 +12,6 @@ let notes = [
 // Construct a schema using GraphQL Schema Language
 export const typeDefs = gql`
   type Query {
-    hello: String
     "Fetch all Notes."
     notes: [Note!]!
     "Fetch a specific Note by ID."
@@ -37,10 +36,6 @@ export const typeDefs = gql`
 // Provide resolver functions for our Schema fields
 export const resolvers = {
   Query: {
-    // Return Hello World for testing purposes
-    hello() {
-      return 'Hello World!';
-    },
     // Return an array of notes to populate the client applications
     notes: async () => {
       return await Note.find();
