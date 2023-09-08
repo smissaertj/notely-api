@@ -1,0 +1,27 @@
+name: 'Check Branch'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  check_branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Source Branch
+        if: github.base_ref == 'main' && github.head_ref != 'staging'
+        run: |
+          echo "ERROR: You can only merge to the main branch from the staging branch."
+          exit 1
+      - name: Checkout Source Branch
+        uses: actions/checkout@v3
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+      - name: Install Dependencies
+        run: |
+          npm ci
+      - name: Lint the source code
+        run: |
+          npm run eslint
