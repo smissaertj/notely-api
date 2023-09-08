@@ -41,20 +41,17 @@ export const resolvers = {
       return await Note.find();
     },
     // Return a specific note by ID
-    note(parent, args, contextValue, info) {
-      return notes.find((note) => note.id === args.id);
+    note: async (parent, args, contextValue, info) => {
+      return await Note.findById(args.id);
     },
   },
   Mutation: {
     // Add a new note and returns the note
-    newNote(parent, args, contextValue, info) {
-      let noteValue = {
-        id: String(notes.length + 1),
+    newNote: async (parent, args, contextValue, info) => {
+      return await Note.create({
         content: args.content,
-        author: 'Joeri',
-      };
-      notes.push(noteValue);
-      return noteValue;
+        author: 'Joeri Smissaert',
+      });
     },
   },
 };
