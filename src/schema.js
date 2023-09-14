@@ -1,14 +1,6 @@
 import { gql } from 'graphql-tag';
 import { Note } from './models/note.js';
 
-// Mock data
-let notes = [
-  { id: '1', content: 'Note 1', author: 'Joeri' },
-  { id: '2', content: 'Note 2', author: 'Dave' },
-  { id: '3', content: 'Note 3', author: 'Mike' },
-  { id: '4', content: 'Note 4', author: 'Steve' },
-];
-
 // Construct a schema using GraphQL Schema Language
 export const typeDefs = gql`
   type Query {
