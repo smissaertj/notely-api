@@ -1,8 +1,12 @@
 import { gql } from "graphql-tag";
+import { GraphQLDateTime } from "graphql-scalars";
 import { Note } from "./models/note.js";
 
 // Construct a schema using GraphQL Schema Language
 export const typeDefs = gql`
+  "Custom Scalar type since GraphQL doesn't come with a date type"
+  scalar DateTime
+  
   type Query {
     "Fetch all Notes."
     notes: [Note!]!
@@ -24,6 +28,10 @@ export const typeDefs = gql`
     content: String!
     "The Note author."
     author: String!
+    "The date and time a note was created."
+    createdAt: DateTime!
+    "The date and time a note was updated."
+    updatedAt: DateTime!
   }
 `;
 
@@ -57,19 +65,25 @@ export const resolvers = {
       }
     },
     updateNote: async ( parent, { content, id } ) => {
-      return await Note.findOneAndUpdate(
-        {
-          _id: id,
-        },
-        {
-          $set: {
-            content
+      try {
+        return await Note.findOneAndUpdate(
+          {
+            _id: id,
+          },
+          {
+            $set: {
+              content
+            }
+          },
+          {
+            new: true // Instruct the DB to return the updated note
           }
-        },
-        {
-          new: true // Instruct the DB to return the updated note
-        }
-      );
+        );
+      } catch ( err ) {
+        console.error( err );
+      }
+
     }
   },
+  DateTime: GraphQLDateTime
 };
