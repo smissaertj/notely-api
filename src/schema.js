@@ -1,16 +1,12 @@
-import { gql } from 'graphql-tag';
-import { Note } from './models/note.js';
-
-// Mock data
-let notes = [
-  { id: '1', content: 'Note 1', author: 'Joeri' },
-  { id: '2', content: 'Note 2', author: 'Dave' },
-  { id: '3', content: 'Note 3', author: 'Mike' },
-  { id: '4', content: 'Note 4', author: 'Steve' },
-];
+import { gql } from "graphql-tag";
+import { GraphQLDateTime } from "graphql-scalars";
+import { Note } from "./models/note.js";
 
 // Construct a schema using GraphQL Schema Language
 export const typeDefs = gql`
+  "Custom Scalar type since GraphQL doesn't come with a date type"
+  scalar DateTime
+  
   type Query {
     "Fetch all Notes."
     notes: [Note!]!
@@ -21,6 +17,8 @@ export const typeDefs = gql`
   type Mutation {
     "Add a new Note."
     newNote(content: String!): Note!
+    updateNote(id: ID!, content: String!): Note!
+    deleteNote(id: ID!): Boolean!
   }
 
   type Note {
@@ -30,6 +28,10 @@ export const typeDefs = gql`
     content: String!
     "The Note author."
     author: String!
+    "The date and time a note was created."
+    createdAt: DateTime!
+    "The date and time a note was updated."
+    updatedAt: DateTime!
   }
 `;
 
@@ -41,17 +43,47 @@ export const resolvers = {
       return await Note.find();
     },
     // Return a specific note by ID
-    note: async (parent, args, contextValue, info) => {
-      return await Note.findById(args.id);
+    note: async ( parent, args ) => {
+      return await Note.findById( args.id );
     },
   },
   Mutation: {
     // Add a new note and returns the note
-    newNote: async (parent, args, contextValue, info) => {
-      return await Note.create({
+    newNote: async ( parent, args ) => {
+      return await Note.create( {
         content: args.content,
-        author: 'Joeri Smissaert',
-      });
+        author: "Joeri Smissaert", 
+      } );
     },
+    // Deletes a note by ID
+    deleteNote: async ( parent, { id } ) => {
+      try {
+        await Note.findOneAndRemove( { _id: id } );
+        return true;
+      } catch ( err ) {
+        return false;
+      }
+    },
+    updateNote: async ( parent, { content, id } ) => {
+      try {
+        return await Note.findOneAndUpdate(
+          {
+            _id: id,
+          },
+          {
+            $set: {
+              content
+            }
+          },
+          {
+            new: true // Instruct the DB to return the updated note
+          }
+        );
+      } catch ( err ) {
+        console.error( err );
+      }
+
+    }
   },
+  DateTime: GraphQLDateTime
 };
