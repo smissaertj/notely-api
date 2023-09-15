@@ -7,9 +7,6 @@ import { AuthenticationError, ForbiddenError } from "./customErrors.js";
 import { Note } from "./models/note.js";
 import { User } from "./models/user.js";
 
-// GraphQL Errors
-
-
 
 // Construct a schema using GraphQL Schema Language
 export const typeDefs = gql`
