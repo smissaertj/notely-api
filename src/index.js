@@ -8,6 +8,8 @@ import http from "http";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { typeDefs, resolvers } from "./schema.js";
+import { Note } from "./models/note.js";
+import { User } from "./models/user.js";
 
 // Initialize database
 const DB_HOST = process.env.DB_HOST;
@@ -40,7 +42,11 @@ app.use(
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware( server, {
-    context: async ( { req } ) => ( { token: req.headers.token } ),
+    context: async ( { req } ) => ( {
+      token: req.headers.token,
+      Note,
+      User
+    } ),
   } ),
 );
 

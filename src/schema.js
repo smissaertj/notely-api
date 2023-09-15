@@ -4,8 +4,6 @@ import jwt from "jsonwebtoken";
 import { gql } from "graphql-tag";
 import { GraphQLDateTime } from "graphql-scalars";
 import { AuthenticationError, ForbiddenError } from "./customErrors.js";
-import { Note } from "./models/note.js";
-import { User } from "./models/user.js";
 
 
 // Construct a schema using GraphQL Schema Language
@@ -59,24 +57,24 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     // Return an array of notes to populate the client applications
-    notes: async () => {
+    notes: async ( _, __, { Note } ) => {
       return await Note.find();
     },
     // Return a specific note by ID
-    note: async ( parent, args ) => {
+    note: async ( _, args, { Note } ) => {
       return await Note.findById( args.id );
     },
   },
   Mutation: {
     // Add a new note and returns the note
-    newNote: async ( parent, args ) => {
+    newNote: async ( _, args, { Note } ) => {
       return await Note.create( {
         content: args.content,
         author: "Joeri Smissaert", 
       } );
     },
     // Deletes a note by ID
-    deleteNote: async ( parent, { id } ) => {
+    deleteNote: async ( _, { id }, { Note } ) => {
       try {
         await Note.findOneAndRemove( { _id: id } );
         return true;
@@ -84,7 +82,7 @@ export const resolvers = {
         return false;
       }
     },
-    updateNote: async ( parent, { content, id } ) => {
+    updateNote: async ( _, { content, id }, { Note } ) => {
       try {
         return await Note.findOneAndUpdate(
           {
@@ -104,7 +102,7 @@ export const resolvers = {
       }
 
     },
-    signUp: async ( parent, { username, email, password } ) => {
+    signUp: async ( _, { username, email, password }, { User } ) => {
       // normalize email address
       email = email.trim().toLowerCase();
       // hash the password
@@ -122,7 +120,7 @@ export const resolvers = {
         throw new Error( `Error creating account: ${err.message}` );
       }
     },
-    signIn: async( parent, { username, email, password } ) => {
+    signIn: async( _, { username, email, password }, { User } ) => {
       if ( email ){
         // normalize email address
         email = email.trim().toLowerCase();
