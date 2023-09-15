@@ -1,6 +1,15 @@
+import "dotenv/config";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { gql } from "graphql-tag";
 import { GraphQLDateTime } from "graphql-scalars";
+import { AuthenticationError, ForbiddenError } from "./customErrors.js";
 import { Note } from "./models/note.js";
+import { User } from "./models/user.js";
+
+// GraphQL Errors
+
+
 
 // Construct a schema using GraphQL Schema Language
 export const typeDefs = gql`
@@ -19,6 +28,10 @@ export const typeDefs = gql`
     newNote(content: String!): Note!
     updateNote(id: ID!, content: String!): Note!
     deleteNote(id: ID!): Boolean!
+    "Allows a user to signup, returns a JWT"
+    signUp(username: String!, email: String!, password: String!): String!
+    "Allows a user to sign in with either a username or an email and a password, returns a JWT"
+    signIn(username: String, email: String, password: String!): String!
   }
 
   type Note {
@@ -32,6 +45,16 @@ export const typeDefs = gql`
     createdAt: DateTime!
     "The date and time a note was updated."
     updatedAt: DateTime!
+  }
+  
+  type User {
+    id: ID!
+    username: String!
+    email: String!
+    "A link/url pointing to the user's avatar."
+    avatar: String
+    "An array of notes the user created."
+    notes: [Note!]!
   }
 `;
 
@@ -83,6 +106,48 @@ export const resolvers = {
         console.error( err );
       }
 
+    },
+    signUp: async ( parent, { username, email, password } ) => {
+      // normalize email address
+      email = email.trim().toLowerCase();
+      // hash the password
+      const hashedPw = await bcrypt.hash( password, 10 );
+      try {
+        const user = await User.create( {
+          username,
+          email,
+          password: hashedPw
+        } );
+        // create and return the JWT
+        return jwt.sign( { id: user._id }, process.env.JWT_SECRET );
+      } catch( err ) {
+        console.error( err );
+        throw new Error( `Error creating account: ${err.message}` );
+      }
+    },
+    signIn: async( parent, { username, email, password } ) => {
+      if ( email ){
+        // normalize email address
+        email = email.trim().toLowerCase();
+      }
+
+      const user = await User.findOne( {
+        $or: [ { email }, { username } ]
+      } );
+
+      // if no user is found, throw an auth error
+      if ( !user ){
+        throw new AuthenticationError( "Error signing in!" );
+      }
+
+      // if the passwords don't match, throw an auth error
+      const isValidPassword = await bcrypt.compare( password, user.password );
+      if ( !isValidPassword ){
+        throw new AuthenticationError( "Error signing in!" );
+      }
+
+      // create and return the json web token
+      return jwt.sign( { id: user._id }, process.env.JWT_SECRET );
     }
   },
   DateTime: GraphQLDateTime
