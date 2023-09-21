@@ -7,7 +7,7 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { typeDefs, resolvers } from "./schema.js";
+import { typeDefs, resolvers, getUser } from "./schema.js";
 import { Note } from "./models/note.js";
 import { User } from "./models/user.js";
 
@@ -42,11 +42,11 @@ app.use(
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware( server, {
-    context: async ( { req } ) => ( {
-      token: req.headers.token,
-      Note,
-      User
-    } ),
+    context: async ( { req } ) =>  {
+      const userData =  getUser( req.headers.authorization );
+      console.log( userData );
+      return { userData, Note, User };
+    },
   } ),
 );
 

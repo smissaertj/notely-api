@@ -5,6 +5,16 @@ import { gql } from "graphql-tag";
 import { GraphQLDateTime } from "graphql-scalars";
 import { AuthenticationError, ForbiddenError } from "./customErrors.js";
 
+// get the user info from a JWT
+export const getUser = token => {
+  if( token ){
+    try{
+      return jwt.verify( token, process.env.JWT_SECRET );
+    } catch ( err ) {
+      throw new ForbiddenError( "Session invalid" );
+    }
+  }
+};
 
 // Construct a schema using GraphQL Schema Language
 export const typeDefs = gql`
